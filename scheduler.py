@@ -311,7 +311,8 @@ if "dfm" not in st.session_state:
 st.session_state.dfm = schedule_production_with_days(st.session_state.dfm)
 st.session_state.dfm = adjust_end_time_and_start_time(st.session_state.dfm)  # Adjust Start and End Times
 st.session_state.dfm = st.session_state.dfm.sort_values(by=['Start Time','End Time','Promised Delivery Date'])
-
+if "dfm" not in st.session_state:
+    dfm = st.session_state.dfm
 
 st.session_state.dfm.loc[
     (st.session_state.dfm['Process Type'] == 'In House') &
