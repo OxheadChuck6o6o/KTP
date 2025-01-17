@@ -6,7 +6,7 @@ from visualisation import visualisation  # Import Gantt chart visualization
 from modify import modify_tab
 from product_list_change import product_list_change
 from product_catalogue import product_catalogue
-# from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
+from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
 
 # Set page configuration
 st.set_page_config(
@@ -31,11 +31,22 @@ st.write(st.session_state)
 # if "late_df" not in st.session_state:
 #     st.session_state.dfm = late_df
 
-df = st.session_state.df
-dfm = st.session_state.dfm
-product_waiting_df = st.session_state.product_waiting_df
-component_waiting_df =  st.session_state.component_waiting_df 
-late_df = st.session_state.dfm
+# df = st.session_state.df
+# dfm = st.session_state.dfm
+# product_waiting_df = st.session_state.product_waiting_df
+# component_waiting_df =  st.session_state.component_waiting_df 
+# late_df = st.session_state.dfm
+
+if "late_df" not in st.session_state:
+    st.session_state.late_df = late_df
+if "df" not in st.session_state:
+    st.session_state.df = df
+if "dfm" not in st.session_state:  # Adjust Start and End Times
+    st.session_state.dfm = dfm
+if "component_waiting_df" not in st.session_state:
+    st.session_state.component_waiting_df = component_waiting_df
+if "product_waiting_df" not in st.session_state:
+    st.session_state.product_waiting_df = product_waiting_df
 
 # # File Download Button
 # @st.cache_data
