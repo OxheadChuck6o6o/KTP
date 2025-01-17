@@ -61,7 +61,7 @@ with tabs[0]:  # Visualisation Tab
 
     
 with tabs[1]:
-    modify()
+    modify_tab()
 
 with tabs[2]:
     product_list_change()
