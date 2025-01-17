@@ -6,7 +6,7 @@ from visualisation import visualisation  # Import Gantt chart visualization
 from modify import modify
 from product_list_change import product_list_change
 from product_catalogue import product_catalogue
-from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
+from scheduler import dfm, product_waiting_df, component_waiting_df, late_df
 
 
 if "df" not in st.session_state:
