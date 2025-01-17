@@ -27,8 +27,8 @@ df = df.sort_values(by=['Promised Delivery Date',
                         'Product Name',
                         'Components']).reset_index(drop=True)
 
-if "df" not in st.session_state:
-    st.session_state.df = df
+# if "df" not in st.session_state:
+st.session_state.df = df
 
 # Define working hours and working days
 WORK_HOURS_PER_DAY = 8
@@ -310,18 +310,18 @@ dfm = df.copy()
 dfm = schedule_production_with_days(dfm)
 dfm = adjust_end_time_and_start_time(dfm)
 dfm = dfm.sort_values(by=['Start Time','End Time','Promised Delivery Date'])
-if "dfm" not in st.session_state:  # Adjust Start and End Times
-    st.session_state.dfm = dfm
 
-st.session_state.dfm.loc[
-    (st.session_state.dfm['Process Type'] == 'In House') &
-    (st.session_state.dfm['End Time'] > st.session_state.dfm['Promised Delivery Date']), 'Status'] = 'Completed_In House'
-st.session_state.dfm.loc[
-    (st.session_state.dfm['Process Type'] == 'Outsource') &
-    (st.session_state.dfm['End Time'] > st.session_state.dfm['Promised Delivery Date']), 'Status'] = 'Completed_Outsource'
-st.session_state.dfm.loc[
-    (st.session_state.dfm['End Time'] < st.session_state.dfm['Promised Delivery Date']), 'Status'] = 'Late'
+dfm.loc[
+    (dfm['Process Type'] == 'In House') &
+    (dfm['End Time'] > dfm['Promised Delivery Date']), 'Status'] = 'Completed_In House'
+dfm.loc[
+    (dfm['Process Type'] == 'Outsource') &
+    (dfm['End Time'] > dfm['Promised Delivery Date']), 'Status'] = 'Completed_Outsource'
+dfm.loc[(dfm['End Time'] < dfm['Promised Delivery Date']), 'Status'] = 'Late'
 
+# if "dfm" not in st.session_state:  # Adjust Start and End Times
+st.session_state.dfm = dfm
+  
 def calculate_business_hours_split(start_time, end_time):
     # Initialize the total business hours
     total_hours = timedelta()
@@ -459,7 +459,7 @@ def calculate_waiting_time(df, group_by_column, date_columns):
     return formatted_df
     
 component_waiting_df = calculate_waiting_time(
-        st.session_state.dfm,
+        dfm,
         group_by_column='Components',
         date_columns=('Order Processing Date', 'Start Time'))
     
@@ -467,7 +467,7 @@ if "component_waiting_df" not in st.session_state:
     st.session_state.component_waiting_df = component_waiting_df
     
 product_waiting_df = calculate_waiting_time(
-        st.session_state.dfm,
+        dfm,
         group_by_column='Product Name',
         date_columns=('Order Processing Date', 'Start Time'))
 if "product_waiting_df" not in st.session_state:
