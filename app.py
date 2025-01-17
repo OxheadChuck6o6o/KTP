@@ -77,7 +77,7 @@ tabs = st.tabs([
 with tabs[0]:  # Visualisation Tab
     # if "dfm" in st.session_state:
         # dfm = st.session_state.dfm
-    visualisation()
+    visualisation_tab()
 
     
 with tabs[1]:
