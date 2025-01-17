@@ -478,8 +478,6 @@ def late_products(dfm):
 late_df = late_products(dfm)
 
 
-# if "late_df" not in st.session_state:
-st.session_state.late_df = late_df
 # if "df" not in st.session_state:
 st.session_state.df = df
 # if "dfm" not in st.session_state:  # Adjust Start and End Times
@@ -488,4 +486,5 @@ st.session_state.dfm = dfm
 st.session_state.component_waiting_df = component_waiting_df
 # if "product_waiting_df" not in st.session_state:
 st.session_state.product_waiting_df = product_waiting_df
-
+# if "late_df" not in st.session_state:
+st.session_state.late_df = late_df
