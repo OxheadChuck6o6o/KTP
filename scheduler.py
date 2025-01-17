@@ -27,8 +27,6 @@ df = df.sort_values(by=['Promised Delivery Date',
                         'Product Name',
                         'Components']).reset_index(drop=True)
 
-# if "df" not in st.session_state:
-st.session_state.df = df
 
 # Define working hours and working days
 WORK_HOURS_PER_DAY = 8
@@ -318,9 +316,6 @@ dfm.loc[
     (dfm['Process Type'] == 'Outsource') &
     (dfm['End Time'] > dfm['Promised Delivery Date']), 'Status'] = 'Completed_Outsource'
 dfm.loc[(dfm['End Time'] < dfm['Promised Delivery Date']), 'Status'] = 'Late'
-
-# if "dfm" not in st.session_state:  # Adjust Start and End Times
-st.session_state.dfm = dfm
   
 def calculate_business_hours_split(start_time, end_time):
     # Initialize the total business hours
@@ -463,20 +458,16 @@ component_waiting_df = calculate_waiting_time(
         group_by_column='Components',
         date_columns=('Order Processing Date', 'Start Time'))
     
-if "component_waiting_df" not in st.session_state:
-    st.session_state.component_waiting_df = component_waiting_df
     
 product_waiting_df = calculate_waiting_time(
         dfm,
         group_by_column='Product Name',
         date_columns=('Order Processing Date', 'Start Time'))
-if "product_waiting_df" not in st.session_state:
-    st.session_state.product_waiting_df = product_waiting_df
 
-st.session_state.dfm['legend'] = st.session_state.dfm['Components']
-for i in range(len(st.session_state.dfm)):
-  if st.session_state.dfm['Machine Number'][i] == 'OutSrc':
-    st.session_state.dfm['legend'][i] = 'OutSrc'
+dfm['legend'] = dfm['Components']
+for i in range(len(dfm)):
+  if dfm['Machine Number'][i] == 'OutSrc':
+    dfm['legend'][i] = 'OutSrc'
 
 def late_products(dfm):
     late = dfm.sort_values(by=['Product Name','Components']).groupby('Product Name',as_index=False).last()
@@ -485,5 +476,16 @@ def late_products(dfm):
 
     return late_df
 late_df = late_products(dfm)
-if "late_df" not in st.session_state:
-    st.session_state.late_df = late_df
+
+
+# if "late_df" not in st.session_state:
+st.session_state.late_df = late_df
+# if "df" not in st.session_state:
+st.session_state.df = df
+# if "dfm" not in st.session_state:  # Adjust Start and End Times
+st.session_state.dfm = dfm
+# if "component_waiting_df" not in st.session_state:
+st.session_state.component_waiting_df = component_waiting_df
+# if "product_waiting_df" not in st.session_state:
+st.session_state.product_waiting_df = product_waiting_df
+
