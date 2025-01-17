@@ -3,7 +3,7 @@ import pandas as pd
 # from scheduler import dfm  # Import the processed `dfm` from the backend
 from visualisation import visualisation  # Import Gantt chart visualization
 # from results import results
-from modify import modify
+from modify import modify,dfm
 from product_list_change import product_list_change
 from product_catalogue import product_catalogue
 
