@@ -10,10 +10,11 @@ from collections import defaultdict
 import streamlit as st
 
 # df, dfm, component_waiting_df, product_waiting_df, late_df
+df = pd.read_excel('Product Details_v1.xlsx', sheet_name='P')
+if "df" not in st.session_state:
+    st.session_state.df = df
 
-# if "df" not in st.session_state:
-#     st.session_state.df = pd.read_excel('Product Details_v1.xlsx', sheet_name='P')
-#     df = pd.read_excel('Product Details_v1.xlsx', sheet_name='P')
+    
 
 # Convert columns to appropriate types
 st.session_state.df['Order Processing Date'] = pd.to_datetime(st.session_state.df['Order Processing Date'])
