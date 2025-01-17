@@ -32,7 +32,7 @@ def create_bar_chart(data, x_col, y_col, color=None):
     )
     return fig
 
-def visualisation():
+def visualisation_tab():
     st.subheader("Visualisation")
 
     # Initialize session state for progressive visualization
