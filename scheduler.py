@@ -381,7 +381,7 @@ def calculate_machine_utilization(df):
     )
 
     # Expand the daily utilization into a separate DataFrame
-    daily_utilization_expanded = st.session_state.dfm.explode("Daily Utilization").reset_index()
+    daily_utilization_expanded = dfm.explode("Daily Utilization").reset_index()
 
     # Extract the date and production minutes
     daily_utilization_expanded[["Production Date", "Production Minutes"]] = daily_utilization_expanded[
@@ -425,13 +425,13 @@ def calculate_waiting_time(df, group_by_column, date_columns):
         return total_hours
 
     # Apply the business hours calculation
-    st.session_state.dfm['wait_time'] = st.session_state.dfm.apply(
+    dfm['wait_time'] = dfm.apply(
         lambda row: business_hours_split(row[start_col], row[end_col]),
         axis=1
     )
 
     # Group and calculate the average waiting time
-    wait_time_grouped = st.session_state.dfm.groupby(group_by_column)['wait_time'].mean()
+    wait_time_grouped = dfm.groupby(group_by_column)['wait_time'].mean()
 
     # Format the results
     formatted_results = []
