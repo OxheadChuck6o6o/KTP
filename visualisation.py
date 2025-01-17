@@ -6,12 +6,12 @@ from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization, initialise_state
 
+initialise_state()
 # df = st.session_state.df
 # dfm = st.session_state.dfm
 # product_waiting_df = st.session_state.product_waiting_df
 # component_waiting_df =  st.session_state.component_waiting_df 
 # late_df = st.session_state.dfm
-initialise_state()
 
 # Create Bar Charts
 def create_bar_chart(data, x_col, y_col, color=None):
@@ -98,7 +98,7 @@ def visualisation():
         st_autorefresh(interval=1000, limit=None, key="autorefresh")  # Refresh every second
         # Add the next row to the progress DataFrame
         st.session_state.dfm_progress = pd.concat(
-            [st.session_state.dfm_progress, dfm.iloc[st.session_state.rows_added:st.session_state.rows_added + 1]],
+            [st.session_state.dfm_progress, st.session_state.dfm.iloc[st.session_state.rows_added:st.session_state.rows_added + 1]],
             ignore_index=True
         )
         st.session_state.rows_added += 1  # Increment the counter
