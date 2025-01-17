@@ -375,7 +375,7 @@ def calculate_machine_utilization(df):
         return daily_utilization
 
     # Apply the function to calculate daily utilization for each task
-    dfm["Daily Utilization"] = apply(
+    dfm["Daily Utilization"] = dfm.apply(
         lambda row: calculate_daily_utilization(row["Start Time"], row["End Time"]),
         axis=1,
     )
