@@ -62,9 +62,9 @@ tabs = st.tabs([
 
 # Tab Content
 with tabs[0]:  # Visualisation Tab
-    if "dfm" in st.session_state:
+    # if "dfm" in st.session_state:
         # dfm = st.session_state.dfm
-        visualisation(st.session_state.dfm, st)
+    visualisation()
 
     
 with tabs[1]:
