@@ -461,7 +461,7 @@ def calculate_waiting_time(df, group_by_column, date_columns):
 component_waiting_df = calculate_waiting_time(
         st.session_state.dfm,
         group_by_column='Components',
-        date_columns=('Order Processing Date', 'Start Time')
+        date_columns=('Order Processing Date', 'Start Time'))
     
 if "component_waiting_df" not in st.session_state:
     st.session_state.component_waiting_df = component_waiting_df
@@ -469,7 +469,7 @@ if "component_waiting_df" not in st.session_state:
 product_waiting_df = calculate_waiting_time(
         st.session_state.dfm,
         group_by_column='Product Name',
-        date_columns=('Order Processing Date', 'Start Time')
+        date_columns=('Order Processing Date', 'Start Time'))
 if "product_waiting_df" not in st.session_state:
     st.session_state.product_waiting_df = product_waiting_df
 
