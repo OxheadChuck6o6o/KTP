@@ -13,6 +13,7 @@ import streamlit as st
 
 if "df" not in st.session_state:
     st.session_state.df = pd.read_excel('Product Details_v1.xlsx', sheet_name='P')
+    df = st.session_state.df
 
 # Convert columns to appropriate types
 st.session_state.df['Order Processing Date'] = pd.to_datetime(st.session_state.df['Order Processing Date'])
@@ -29,6 +30,8 @@ st.session_state.df.loc[st.session_state.df['Process Type'] == 'Outsource','Stat
 st.session_state.df = st.session_state.df.sort_values(by=['Promised Delivery Date',
                         'Product Name',
                         'Components']).reset_index(drop=True)
+# if "df" not in st.session_state:
+    
 
 # Define working hours and working days
 WORK_HOURS_PER_DAY = 8
