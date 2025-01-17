@@ -468,6 +468,7 @@ if "component_waiting_df" not in st.session_state:
         group_by_column='Components',
         date_columns=('Order Processing Date', 'Start Time')
     )
+    component_waiting_df = st.session_state.component_waiting_df
 
 if "product_waiting_df" not in st.session_state:
     st.session_state.product_waiting_df = calculate_waiting_time(
@@ -475,6 +476,7 @@ if "product_waiting_df" not in st.session_state:
         group_by_column='Product Name',
         date_columns=('Order Processing Date', 'Start Time')
     )
+    product_waiting_df = st.session_state.product_waiting_df
 
 st.session_state.dfm['legend'] = st.session_state.dfm['Components']
 for i in range(len(st.session_state.dfm)):
@@ -490,5 +492,6 @@ def late_products(dfm):
 
 if "late_df" not in st.session_state:
     st.session_state.late_df = late_products(st.session_state.dfm)
+    late_df = st.session_state.late_df
 
 # st.session_state.dfm = st.session_state.dfm.drop(columns=['Daily Utilization','wait_time','legend'])
