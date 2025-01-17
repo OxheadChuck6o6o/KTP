@@ -6,10 +6,10 @@ from visualisation import visualisation  # Import Gantt chart visualization
 from modify import modify
 from product_list_change import product_list_change
 from product_catalogue import product_catalogue
-# from scheduler import dfm
+from scheduler import dfm
 
-# if "dfm" not in st.session_state:
-#     st.session_state.dfm = dfm
+if "dfm" not in st.session_state:
+    st.session_state.dfm = dfm
 
 # Set page configuration
 st.set_page_config(
