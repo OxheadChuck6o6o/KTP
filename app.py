@@ -8,6 +8,16 @@ from product_list_change import product_list_change
 from product_catalogue import product_catalogue
 from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
 
+# Set page configuration
+st.set_page_config(
+    page_title="Machine Production Scheduler",
+    page_icon="🦾",
+    layout="wide"
+)
+
+# Main Title
+st.title("Machine Production Scheduler")
+
 st.write(st.session_state)
 
 if "df" not in st.session_state:
@@ -20,16 +30,6 @@ if "component_waiting_df" not in st.session_state:
     st.session_state.dfm = component_waiting_df
 if "late_df" not in st.session_state:
     st.session_state.dfm = late_df
-
-# Set page configuration
-st.set_page_config(
-    page_title="Machine Production Scheduler",
-    page_icon="🦾",
-    layout="wide"
-)
-
-# Main Title
-st.title("Machine Production Scheduler")
 
 # # File Download Button
 # @st.cache_data
