@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 # from scheduler import dfm  # Import the processed `dfm` from the backend
-from visualisation import visualisation  # Import Gantt chart visualization
+from visualisation import visualisation_tab  # Import Gantt chart visualization
 # from results import results
 from modify import modify_tab
 from product_list_change import product_list_change
