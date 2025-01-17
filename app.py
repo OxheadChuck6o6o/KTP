@@ -31,7 +31,7 @@ st.write(st.session_state)
 # if "late_df" not in st.session_state:
 #     st.session_state.dfm = late_df
 
-df = st.session_state.dfm
+df = st.session_state.df
 dfm = st.session_state.dfm
 product_waiting_df = st.session_state.product_waiting_df
 component_waiting_df =  st.session_state.component_waiting_df 
