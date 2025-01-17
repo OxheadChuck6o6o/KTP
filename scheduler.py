@@ -23,7 +23,7 @@ df.loc[df['Process Type'] == 'In House', 'Status'] = 'InProgress_In House'
 df.loc[df['Process Type'] == 'Outsource','Status'] = 'InProgress_Outsource'
 
 # Sort the data by Promised Delivery Date, Product Name, and Component order
-df = st.session_state.df.sort_values(by=['Promised Delivery Date',
+df = df.sort_values(by=['Promised Delivery Date',
                         'Product Name',
                         'Components']).reset_index(drop=True)
 
