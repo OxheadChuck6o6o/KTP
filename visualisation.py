@@ -6,7 +6,7 @@ from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization
 
-df = st.session_state.dfm
+df = st.session_state.df
 dfm = st.session_state.dfm
 product_waiting_df = st.session_state.product_waiting_df
 component_waiting_df =  st.session_state.component_waiting_df 
