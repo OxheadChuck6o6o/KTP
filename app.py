@@ -8,7 +8,7 @@ from product_list_change import product_list_change
 from product_catalogue import product_catalogue
 from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
 
-dt.write(st.session_state)
+st.write(st.session_state)
 
 if "df" not in st.session_state:
     st.session_state.dfm = df
