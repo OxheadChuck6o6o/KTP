@@ -9,16 +9,16 @@ from product_catalogue import product_catalogue
 # from scheduler import df, dfm, product_waiting_df, component_waiting_df, late_df
 
 
-if "df" not in st.session_state:
-    st.session_state.dfm = df
-if "dfm" not in st.session_state:
-    st.session_state.dfm = dfm
-if "product_waiting_df" not in st.session_state:
-    st.session_state.product_waiting_df = product_waiting_df
-if "component_waiting_df" not in st.session_state:
-    st.session_state.dfm = component_waiting_df
-if "late_df" not in st.session_state:
-    st.session_state.dfm = late_df
+# if "df" not in st.session_state:
+#     st.session_state.dfm = df
+# if "dfm" not in st.session_state:
+#     st.session_state.dfm = dfm
+# if "product_waiting_df" not in st.session_state:
+#     st.session_state.product_waiting_df = product_waiting_df
+# if "component_waiting_df" not in st.session_state:
+#     st.session_state.dfm = component_waiting_df
+# if "late_df" not in st.session_state:
+#     st.session_state.dfm = late_df
 
 # Set page configuration
 st.set_page_config(
