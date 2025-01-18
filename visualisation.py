@@ -179,7 +179,7 @@ def visualisation_tab():
             data,
             x="Duration",  # Horizontal axis
             y="Product Name",  # Vertical axis
-            color="Components",  # Color by components
+            color="legend",  # Color by components
             orientation="h",  # Horizontal bars
             labels={"Duration": "Task Duration (minutes)", "Product Name": "Product", "Components": "Component"},
             # title="Horizontal Bar Chart of Task Durations"
