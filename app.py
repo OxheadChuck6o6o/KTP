@@ -69,7 +69,7 @@ initialise_state()
 # Add Tabs Below
 tabs = st.tabs([
     "Visualisation",  
-    "Modify",
+    # "Modify",
     "Product List Change", 
     "Product Catalogue", 
     # "Similarity Catalogue", 
@@ -80,11 +80,11 @@ tabs = st.tabs([
 with tabs[0]:
     visualisation_tab()
 
-with tabs[1]:
-    modify_tab()
+# with tabs[1]:
+#     modify_tab()
 
-with tabs[2]:
+with tabs[1]:
     product_list_change()
 
-with tabs[3]:
+with tabs[2]:
     product_catalogue()
