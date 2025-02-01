@@ -235,21 +235,6 @@ def schedule_production_with_days(data):
     # Return the completed schedule
     return data
 
-
-# Call the function with the dataset
-dfm = df.copy()
-dfm = schedule_production_with_days(dfm)
-dfm = adjust_end_time_and_start_time(dfm)  # Adjust Start and End Times
-# dfm = calculate_gaps(dfm)  # Recalculate gaps if necessary
-
-# Display the results, sorted by schedule
-dfm[['UniqueID', 'Product Name', 'Promised Delivery Date', 'Components',
-     'Machine Number', 'Operation', 'Quantity Required',
-     'Run Time (min/1000)', 'Start Time', 'End Time',
-    #  'machine_gaps', 'machine_prev',
-    #  'prod_comp_gap', 'prod_comp_prev'
-     ]].sort_values(by=['Start Time', 'End Time', 'Promised Delivery Date']).reset_index(drop=True)
-
 def calculate_gaps(df):
     loop_len = max(df['Product Name'].value_counts())
     df = df.groupby('Product Name', as_index=False).first().sort_values(by=['Promised Delivery Date', 'Start Time','End Time']).reset_index(drop=True)
