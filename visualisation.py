@@ -81,7 +81,7 @@ def visualisation_tab():
 
     # Layout for buttons
     with st.container():
-        col1, spacer1, col2, spacer2, col3, spacer3, col4 = st.columns([1, 0.2, 1, 0.2, 1, 0.2, 1])
+        col1, spacer1, col2, spacer2, col3, = st.columns([1, 0.2, 1, 0.2, 1])
 
         with col1:
             if st.button("Start"):
