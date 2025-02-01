@@ -5,20 +5,29 @@ import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 from collections import defaultdict
-from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization, adjust_end_time_and_start_time, schedule_production_with_days,  calculate_waiting_time, late_products
+from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization, adjust_end_time_and_start_time, schedule_production_with_days, reschedule_production_with_days, calculate_waiting_time, late_products
 import time
 
-# Inject CSS to frame all visualizations
-st.markdown("""
-    <style>
-        div.stPlotlyChart {
-            border: 2px solid white !important;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# Function to create a vertical divider
+def vertical_divider():
+    st.markdown(
+        """ 
+        <style>
+            .divider {
+                display: inline-block;
+                width: 1px;
+                background-color: white;
+                height: 100%;
+                margin: 0 10px;
+            }
+        </style>
+        <div class="divider"></div>
+        """, unsafe_allow_html=True
+    )
+
+# Function to create a horizontal divider
+def horizontal_divider():
+    st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # Create Bar Charts
 def create_bar_chart(data, x_col, y_col, color=None):
@@ -103,53 +112,53 @@ def visualisation_tab():
                 st.session_state.auto_refresh = False
                 st.session_state.rows_added -= 1
                 st.info("Animation paused.")
+        # with col3:
+        #     if st.button("Reschedule"):
+        #         pause_index = st.session_state.rows_added  # Use current progress as the pause index
+        #         # Extract scheduled and unscheduled parts
+        #         dfm1 = st.session_state.dfm.iloc[:pause_index].copy().reset_index(drop=True)  # Scheduled portion
+        #         dfm2 = st.session_state.dfm.iloc[pause_index:].copy().sort_values(
+        #             by=['Start Time', 'End Time', 'Promised Delivery Date']
+        #         ).reset_index(drop=True)  # Remaining unscheduled portion
+
+        #         # Reset unscheduled rows
+        #         dfm2['Start Time'] = pd.NaT
+        #         dfm2['End Time'] = pd.NaT
+
+        #         # Reschedule using the existing state
+        #         dfm2 = reschedule_production_with_days(dfm2, st.session_state.machine_last_end,
+        #                                               st.session_state.machine_schedule, dfm1)
+        #         dfm2 = adjust_end_time_and_start_time(dfm2).sort_values(
+        #             by=['Start Time', 'End Time', 'Promised Delivery Date'])
+        #         # Combine both parts
+        #         new_dataframe = pd.concat([dfm1, dfm2], ignore_index=True)
+
+        #         # Append the new dataframe to the history list
+        #         st.session_state.dataframe_history.append(new_dataframe)
+
+        #         # Calculate derived dataframes
+        #         machine_utilization_df = calculate_machine_utilization(new_dataframe.copy())
+        #         component_waiting_df = calculate_waiting_time(new_dataframe, group_by_column='Components', date_columns=('Order Processing Date', 'Start Time'))
+        #         product_waiting_df = calculate_waiting_time(new_dataframe, group_by_column='Product Name', date_columns=('Order Processing Date', 'Start Time'))
+        #         late_df = late_products(new_dataframe)
+
+        #         # Append derived dataframes to their history lists
+        #         st.session_state.machine_utilization_history.append(machine_utilization_df)
+        #         st.session_state.component_waiting_history.append(component_waiting_df)
+        #         st.session_state.product_waiting_history.append(product_waiting_df)
+        #         st.session_state.late_df_history.append(late_df)
+
+        #         # Ensure only the last 4 dataframes are retained
+        #         if len(st.session_state.dataframe_history) > 4:
+        #             st.session_state.dataframe_history.pop(0)  # Remove the oldest dataframe
+        #             st.session_state.machine_utilization_history.pop(0)
+        #             st.session_state.component_waiting_history.pop(0)
+        #             st.session_state.product_waiting_history.pop(0)
+        #             st.session_state.late_df_history.pop(0)
+
+        #         st.session_state.rows_added = pause_index  # Restart animation from the current index
+        #         st.info("Rescheduling initiated. Click 'Start' to animate again.")
         with col3:
-            if st.button("Reschedule"):
-                pause_index = st.session_state.rows_added  # Use current progress as the pause index
-                # Extract scheduled and unscheduled parts
-                dfm1 = st.session_state.dfm.iloc[:pause_index].copy().reset_index(drop=True)  # Scheduled portion
-                dfm2 = st.session_state.dfm.iloc[pause_index:].copy().sort_values(
-                    by=['Start Time', 'End Time', 'Promised Delivery Date']
-                ).reset_index(drop=True)  # Remaining unscheduled portion
-
-                # Reset unscheduled rows
-                dfm2['Start Time'] = pd.NaT
-                dfm2['End Time'] = pd.NaT
-
-                # Reschedule using the existing state
-                dfm2 = reschedule_production_with_days(dfm2, st.session_state.machine_last_end,
-                                                      st.session_state.machine_schedule, dfm1)
-                dfm2 = adjust_end_time_and_start_time(dfm2).sort_values(
-                    by=['Start Time', 'End Time', 'Promised Delivery Date'])
-                # Combine both parts
-                new_dataframe = pd.concat([dfm1, dfm2], ignore_index=True)
-
-                # Append the new dataframe to the history list
-                st.session_state.dataframe_history.append(new_dataframe)
-
-                # Calculate derived dataframes
-                machine_utilization_df = calculate_machine_utilization(new_dataframe.copy())
-                component_waiting_df = calculate_waiting_time(new_dataframe, group_by_column='Components', date_columns=('Order Processing Date', 'Start Time'))
-                product_waiting_df = calculate_waiting_time(new_dataframe, group_by_column='Product Name', date_columns=('Order Processing Date', 'Start Time'))
-                late_df = late_products(new_dataframe)
-
-                # Append derived dataframes to their history lists
-                st.session_state.machine_utilization_history.append(machine_utilization_df)
-                st.session_state.component_waiting_history.append(component_waiting_df)
-                st.session_state.product_waiting_history.append(product_waiting_df)
-                st.session_state.late_df_history.append(late_df)
-
-                # Ensure only the last 4 dataframes are retained
-                if len(st.session_state.dataframe_history) > 4:
-                    st.session_state.dataframe_history.pop(0)  # Remove the oldest dataframe
-                    st.session_state.machine_utilization_history.pop(0)
-                    st.session_state.component_waiting_history.pop(0)
-                    st.session_state.product_waiting_history.pop(0)
-                    st.session_state.late_df_history.pop(0)
-
-                st.session_state.rows_added = pause_index  # Restart animation from the current index
-                st.info("Rescheduling initiated. Click 'Start' to animate again.")
-        with col4:
             if st.button("Reset"):
                 st.session_state.dfm_progress = pd.DataFrame(columns=st.session_state.dfm.columns)  # Empty progress DataFrame
                 st.session_state.rows_added = 0
@@ -177,7 +186,8 @@ def visualisation_tab():
         st.session_state.auto_refresh = False
         st.success("Animation complete! Reload the page to reset.")
 
-    col1, col2 = st.columns(2)
+    # Layout with white lines between columns
+    col1, col2 = st.columns(2)  # Adding space for the divider
 
     # =========================================================================================
 
@@ -203,7 +213,7 @@ def visualisation_tab():
                 )
                 # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
                 st.plotly_chart(fig_static, use_container_width=True, key='gantt_chart_static')
-                # st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
         else:
             # Display the progressive Gantt chart during animation
             # st.markdown('<div class="visualization-container">', unsafe_allow_html=True)
@@ -224,7 +234,7 @@ def visualisation_tab():
                 )
                 # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
                 st.plotly_chart(fig_animated, use_container_width=True, key='gantt_chart_animated')
-                # st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
         
 # =========================================================================================
     
@@ -259,7 +269,7 @@ def visualisation_tab():
         # Integrate into Streamlit
         # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
         st.plotly_chart(gcu_static, use_container_width=True, key='gantt_chart_unscheduled')
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
         
 # =========================================================================================
 
@@ -288,8 +298,8 @@ def visualisation_tab():
         # st.title("Machine Utilization Visualization")
         # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True, key='product_waiting_time')
-        # st.markdown('</div>', unsafe_allow_html=True)
-        
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+
     # =========================================================================================
 
     with col2:
@@ -350,7 +360,7 @@ def visualisation_tab():
         # Display the scatter plot
         # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True, key='product_component_status')
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # =========================================================================================
  
@@ -387,7 +397,7 @@ def visualisation_tab():
         # st.title("Machine Utilization Visualization")
         # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True, key='machine_utilisation')
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # =========================================================================================
     
@@ -416,6 +426,6 @@ def visualisation_tab():
         # st.title("Machine Utilization Visualization")
         # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True, key='component_waiting_time')
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # =========================================================================================
