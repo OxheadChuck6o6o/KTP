@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 from collections import defaultdict
-from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization, adjust_end_time_and_start_time, schedule_production_with_days, reschedule_production_with_days, calculate_waiting_time, late_products
+from scheduler import adjust_to_working_hours_and_days, calculate_machine_utilization, adjust_end_time_and_start_time, schedule_production_with_days, calculate_waiting_time, late_products
 import time
 
 # Function to create a vertical divider
