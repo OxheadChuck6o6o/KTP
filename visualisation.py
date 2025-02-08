@@ -162,9 +162,15 @@ def visualisation_tab():
                 st.session_state.auto_refresh = False
                 st.session_state.machine_schedule = None
                 st.session_state.machine_last_end = None
-                if 'df_scatter_progress' in st.session_state:
-                    st.session_state.df_scatter_progress = st.session_state.dfm.copy().reset_index(drop=True)
+                
+                # ✅ Clear stored visualization state
+                if "df_scatter_progress" in st.session_state:
+                    del st.session_state.df_scatter_progress  
+                if "last_static_status" in st.session_state:
+                    del st.session_state.last_static_status  
+
                 st.success("Progress reset successfully.")
+
 
         st.write(f'{st.session_state.rows_added + 1}th step')
     
@@ -192,7 +198,7 @@ def visualisation_tab():
         st.success("Animation complete! Reload the page to reset.")
 
     # =========================================================================================
-    # st.write(st.session_state.dfm)
+
     # Gantt Chart
     st.markdown("### Gantt Chart")
     if st.session_state.auto_refresh == False:
@@ -239,64 +245,82 @@ def visualisation_tab():
 
     # Product Components Status
     st.markdown("### Product Components Status")
-    if "df_scatter_progress" not in st.session_state:
-        st.session_state.df_scatter_progress = st.session_state.dfm.copy()#.reset_index(drop=True)  # Independent copy for scatter plot
-    # st.session_state.df_scatter_progress.index = range(1,len(st.session_state.df_scatter_progress)+1)
+    # Ensure scatter plot uses the latest dfm_progress data
+    df_scatter_progress = st.session_state.dfm_progress.copy()
 
-    # conc_row = st.session_state.df_scatter_progress.iloc[0].to_frame().T
-    # st.session_state.df_scatter_progress = pd.concat([conc_row, st.session_state.df_scatter_progress], ignore_index=True).reset_index(drop=True)
+    # ✅ Function to Generate Scatter Plot
+    def generate_scatter_plot(data, key_name):
+        fig = go.Figure()
+        
+        for i in range(len(data)):
+            row = data.iloc[i]
+            marker_symbol = 'circle' if row['Process Type'] == 'Outsource' else 'square'
 
-    # st.write(st.session_state.df_scatter_progress)
-    
-    # Process the current row for the scatter plot
-    current_row_index = st.session_state.rows_added - 1  # Sync progression with Gantt chart
-    if current_row_index < len(st.session_state.df_scatter_progress):
-        # Get the current row to process
-        current_row = st.session_state.df_scatter_progress.reset_index(drop=True).iloc[current_row_index]
+            fig.add_trace(go.Scatter(
+                x=[row['Product Name']],
+                y=[row['Components']],
+                mode='markers+text',
+                marker=dict(size=20, color=row['color'], symbol=marker_symbol),
+                text=row['Machine Number'],
+                textposition='top center',
+                name=row['status'],
+                legendgroup=row['status'],
+                showlegend=not fig.data or row['status'] not in [trace.name for trace in fig.data]
+            ))
 
-        # Update status for the current row based on scatter plot's logic
-        if pd.notna(current_row['End Time']) and pd.notna(current_row['Promised Delivery Date']):
-            if current_row['End Time'] < current_row['Promised Delivery Date']:
-                st.session_state.df_scatter_progress.at[current_row_index, 'status'] = 'Completed'
-            else:#if current_row['End Time'] > current_row['Promised Delivery Date']:
-                st.session_state.df_scatter_progress.at[current_row_index, 'status'] = 'Late'
+        fig.update_layout(
+            xaxis=dict(title="Product Name"),
+            yaxis=dict(title="Components"),
+            legend_title="Status and Process Type",
+            template="plotly_white"
+        )
 
-    # Assign colors for scatter plot
+        st.plotly_chart(fig, use_container_width=True, key=key_name)
+
+    # ✅ Step 1: Assign Colors Based on Status
     status_colors = {
         'InProgress': 'orange',
         'Completed': 'green',
         'Late': 'red'
     }
-    st.session_state.df_scatter_progress['color'] = st.session_state.df_scatter_progress['status'].map(status_colors)
 
-    # Create scatter plot
-    fig = go.Figure()
+    # ✅ Step 2: If Animation is Running, Update Status Dynamically
+    if st.session_state.auto_refresh:
+        st.subheader("Animated Product Component Status")
 
-    for _, row in st.session_state.df_scatter_progress.iterrows():
-        marker_symbol = 'circle' if row['Process Type'] == 'Outsource' else 'square'
+        for i in range(len(df_scatter_progress)):
+            row = df_scatter_progress.iloc[i]
 
-        fig.add_trace(go.Scatter(
-            x=[row['Product Name']],
-            y=[row['Components']],
-            mode='markers+text',
-            marker=dict(size=20, color=row['color'], symbol=marker_symbol),
-            text=row['Machine Number'],  # Display machine info
-            textposition='top center',
-            name=row['status'],  # Controls legend label
-            legendgroup=row['status'],  # Groups traces with the same status
-            showlegend=not fig.data or row['status'] not in [trace.name for trace in fig.data]  # Show legend once per status
-        ))
+            if pd.notna(row['End Time']) and pd.notna(row['Promised Delivery Date']):
+                if row['End Time'] < row['Promised Delivery Date']:
+                    df_scatter_progress.at[i, 'status'] = 'Completed'
+                else:
+                    df_scatter_progress.at[i, 'status'] = 'Late'
+            else:
+                df_scatter_progress.at[i, 'status'] = 'InProgress'
 
-    fig.update_layout(
-        xaxis=dict(title="Product Name"),
-        yaxis=dict(title="Components"),
-        legend_title="Status and Process Type",
-        template="plotly_white"
-    )
+        df_scatter_progress['color'] = df_scatter_progress['status'].map(status_colors)
 
-    # Display the scatter plot
-    # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True, key='product_component_status')
+        # ✅ Store the latest computed status for later use
+        st.session_state.last_static_status = df_scatter_progress.copy()
+
+        # ✅ Display Animated Scatter Plot
+        generate_scatter_plot(df_scatter_progress, key_name="product_component_status_animated")
+
+    # ✅ Step 3: If Animation Stops, Keep Last Updated Status Instead of Resetting
+    else:
+        st.subheader("Static Product Component Status")
+
+        if "last_static_status" in st.session_state:
+            df_scatter_progress = st.session_state.last_static_status  # Keep last updated statuses
+        else:
+            df_scatter_progress["status"] = "InProgress"  # Fallback for first load
+
+        df_scatter_progress['color'] = df_scatter_progress['status'].map(status_colors)
+
+        # ✅ Display Static Scatter Plot (With Last Animation Status)
+        generate_scatter_plot(df_scatter_progress, key_name="product_component_status_static")
+
     st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
     
 # =========================================================================================
@@ -336,135 +360,231 @@ def visualisation_tab():
 
 # =========================================================================================
 
-    # elif selected_visualization == "Machine Utilisation":
     # Calculate machine utilization
-    # st.write(pd.DataFrame(st.session_state.machine_utilization_df).reset_index().columns)
     st.markdown("### Machine Utilisation")
-    average_utilization = calculate_machine_utilization(st.session_state.dfm)
-    # average_utilization = st.session_state.machine_utilization_df.copy()
+    average_utilization = calculate_machine_utilization(st.session_state.dfm_progress)
 
-    # # # Prepare data for visualization
+    # Prepare data for visualization
     utilization_df = average_utilization.reset_index()
     utilization_df.columns = ["Machine Number", "Average Utilization"]
     utilization_df["Average Utilization (%)"] = utilization_df["Average Utilization"] * 100
-    utilization_df["Average Utilization (%)"] = utilization_df["Average Utilization"] * 100
 
-    # Create a bar chart
-    fig = px.bar(
-        utilization_df,
-        # st.session_state.machine_utilization_df,
-        x="Machine Number",
-        y="Average Utilization (%)",
-        # y = 'Daily Utilization',
-        text="Average Utilization (%)",
-        # text = 'Daily Utilization',
-        labels={"Average Utilization (%)": "Utilization (%)", "Machine Number": "Machine"},
-        # title="Average Daily Machine Utilization",
-        color="Machine Number",
-    )
+    if st.session_state.auto_refresh == False:
+        # Static Gantt chart displayed immediately when the page loads
+        if not st.session_state.auto_refresh:  # Show the static chart if not animating
+            mu_static = px.bar(
+                utilization_df,
+                x="Machine Number",
+                y="Average Utilization (%)",
+                text="Average Utilization (%)",
+                labels={"Average Utilization (%)": "Utilization (%)", "Machine Number": "Machine"},
+                color="Machine Number",
+            )
 
-    fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-    fig.update_layout(
-        xaxis_title="Machine",
-        yaxis_title="Utilization (%)",
-        template="plotly_white",
-        showlegend=True,
-    )
+            mu_static.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            mu_static.update_layout(
+                xaxis_title="Machine",
+                yaxis_title="Utilization (%)",
+                template="plotly_white",
+                showlegend=True,
+            )
 
-    # Integrate into Streamlit
-    # st.title("Machine Utilization Visualization")
-    # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True, key='machine_utilisation')
-    st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
-    
+            # Integrate into Streamlit
+            st.plotly_chart(mu_static, use_container_width=True, key='machine_utilisation_static')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+    else:
+        # Display the progressive Gantt chart during animation
+        if st.session_state.auto_refresh or st.session_state.rows_added < st.session_state.total_rows:
+            mu_animated = px.bar(
+                utilization_df,
+                x="Machine Number",
+                y="Average Utilization (%)",
+                text="Average Utilization (%)",
+                labels={"Average Utilization (%)": "Utilization (%)", "Machine Number": "Machine"},
+                color="Machine Number",
+            )
+
+            mu_animated.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            mu_animated.update_layout(
+                xaxis_title="Machine",
+                yaxis_title="Utilization (%)",
+                template="plotly_white",
+                showlegend=True,
+            )
+
+            # Integrate into Streamlit
+            st.plotly_chart(mu_animated, use_container_width=True, key='machine_utilisation_animated')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+
 # =========================================================================================
 
-    # elif selected_visualization == "Product Waiting Time":
-    # Create a bar chart
+    # Calculate machine utilization
     st.markdown("### Product Waiting Time")
-    fig = px.bar(
-        # st.session_state.product_waiting_df,
-        calculate_waiting_time(st.session_state.dfm, group_by_column='Product Name', date_columns=('Order Processing Date', 'Start Time')),
-        x="Product Name",
-        y="Average Days",
-        text="Formatted Time",
-        # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
-        title="Average Product Waiting Time",
-        color="Product Name",
-    )
+    product_waiting = calculate_waiting_time(st.session_state.dfm_progress, group_by_column='Product Name', date_columns=('Order Processing Date', 'Start Time'))
+    
+    if st.session_state.auto_refresh == False:
+        # Static Gantt chart displayed immediately when the page loads
+        if not st.session_state.auto_refresh:  # Show the static chart if not animating
+            pw_static = px.bar(
+                product_waiting,
+                x="Product Name",
+                y="Average Days",
+                text="Formatted Time",
+                # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+                # title="Average Product Waiting Time",
+                color="Product Name",
+            )
 
-    # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-    fig.update_layout(
-        xaxis_title="Product Name",
-        yaxis_title="Waiting Time",
-        template="plotly_white",
-        showlegend=True,
-    )
+            # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            pw_static.update_layout(
+                xaxis_title="Product Name",
+                yaxis_title="Waiting Time",
+                template="plotly_white",
+                showlegend=True,
+            )
 
-    # Integrate into Streamlit
-    # st.title("Machine Utilization Visualization")
-    # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True, key='product_waiting_time')
-    st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+            # Integrate into Streamlit
+            st.plotly_chart(pw_static, use_container_width=True, key='product_waiting_time_static')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+    else:
+        # Display the progressive Gantt chart during animation
+        if st.session_state.auto_refresh or st.session_state.rows_added < st.session_state.total_rows:
+            pw_animated = px.bar(
+                product_waiting,
+                x="Product Name",
+                y="Average Days",
+                text="Formatted Time",
+                # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+                # title="Average Product Waiting Time",
+                color="Product Name",
+            )
+
+            # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            pw_animated.update_layout(
+                xaxis_title="Product Name",
+                yaxis_title="Waiting Time",
+                template="plotly_white",
+                showlegend=True,
+            )
+
+            # Integrate into Streamlit
+            st.plotly_chart(pw_animated, use_container_width=True, key='product_waiting_time_animated')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # =========================================================================================
 
-    # elif selected_visualization == "Component Waiting Time":
-    # Create a bar chart
+    # Calculate machine utilization
     st.markdown("### Component Waiting Time")
-    fig = px.bar(
-        # st.session_state.component_waiting_df,
-        calculate_waiting_time(st.session_state.dfm, group_by_column='Components', date_columns=('Order Processing Date', 'Start Time')),
-        x="Components",
-        y="Average Days",
-        text="Formatted Time",
-        # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
-        title="Average Components Waiting Time",
-        color="Components",
-    )
+    component_waiting = calculate_waiting_time(st.session_state.dfm_progress, group_by_column='Components', date_columns=('Order Processing Date', 'Start Time'))
+    
+    if st.session_state.auto_refresh == False:
+        # Static Gantt chart displayed immediately when the page loads
+        if not st.session_state.auto_refresh:  # Show the static chart if not animating
+            cw_static = px.bar(
+                component_waiting,
+                x="Components",
+                y="Average Days",
+                text="Formatted Time",
+                labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+                color="Components",
+            )
 
-    # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-    fig.update_layout(
-        xaxis_title="Components",
-        yaxis_title="Waiting Time",
-        template="plotly_white",
-        showlegend=True,
-    )
+            # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            cw_static.update_layout(
+                xaxis_title="Components",
+                yaxis_title="Waiting Time",
+                template="plotly_white",
+                showlegend=True,
+            )
 
-    # Integrate into Streamlit
-    # st.title("Machine Utilization Visualization")
-    # st.markdown('<div class="plot-container">', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True, key='component_waiting_time')
-    st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+            # Integrate into Streamlit
+            st.plotly_chart(cw_static, use_container_width=True, key='component_waiting_time_static')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+    else:
+        # Display the progressive Gantt chart during animation
+        if st.session_state.auto_refresh or st.session_state.rows_added < st.session_state.total_rows:
+            cw_animated = px.bar(
+                component_waiting,
+                x="Components",
+                y="Average Days",
+                text="Formatted Time",
+                labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+                color="Components",
+            )
+
+            # fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+            cw_animated.update_layout(
+                xaxis_title="Components",
+                yaxis_title="Waiting Time",
+                template="plotly_white",
+                showlegend=True,
+            )
+
+            # Integrate into Streamlit
+            st.plotly_chart(cw_animated, use_container_width=True, key='component_waiting_time_animated')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
 
 # =========================================================================================
 
     # elif selected_visualization == "Component Waiting Time":
     # Create a bar chart
     st.markdown("### Late Products")
-    fig = px.pie(
-        # st.session_state.late_df,
-        late_products(st.session_state.dfm),
-        values="count",
-        names="late",
-        # text="late",
-        # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
-        title="Number of Late Products",
-        color="count",
-    )
+    product_late = late_products(st.session_state.dfm_progress)
 
-    # Update trace to show both percentage and actual number
-    fig.update_traces(
-        textinfo="label+percent+value",  # Show category name, percentage, and absolute value
-        texttemplate="%{percent:.1%} (%{value})",  # Format: Label: Value (Percentage)
-        textposition="inside",  # Position labels inside the slices
-    )
+    if st.session_state.auto_refresh == False:
+        # Static Gantt chart displayed immediately when the page loads
+        if not st.session_state.auto_refresh:  # Show the static chart if not animating
+            lp_static = px.pie(
+                # st.session_state.late_df,
+                product_late,
+                values="count",
+                names="late",
+                # text="late",
+                # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+                title="Number of Late Products",
+                color="count",
+            )
+            # Update trace to show both percentage and actual number
+            lp_static.update_traces(
+                textinfo="label+percent+value",  # Show category name, percentage, and absolute value
+                texttemplate="%{percent:.1%} (%{value})",  # Format: Label: Value (Percentage)
+                textposition="inside",  # Position labels inside the slices
+            )
 
-    # Update layout
-    fig.update_layout(
-        template="plotly_white",
-        showlegend=True,
-    )
+            # Update layout
+            lp_static.update_layout(
+                template="plotly_white",
+                showlegend=True,
+            )
 
-    st.plotly_chart(fig, use_container_width=True, key='late_products')
-    st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+            st.plotly_chart(lp_static, use_container_width=True, key='late_products_static')
+            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
+    else:
+        # Display the progressive Gantt chart during animation
+        if st.session_state.auto_refresh or st.session_state.rows_added < st.session_state.total_rows:
+            lp_animated = px.pie(
+            # st.session_state.late_df,
+            product_late,
+            values="count",
+            names="late",
+            # text="late",
+            # labels={"Average Days": "Utilization (%)", "Machine Number": "Machine"},
+            title="Number of Late Products",
+            color="count",
+        )
+
+        # Update trace to show both percentage and actual number
+        lp_animated.update_traces(
+            textinfo="label+percent+value",  # Show category name, percentage, and absolute value
+            texttemplate="%{percent:.1%} (%{value})",  # Format: Label: Value (Percentage)
+            textposition="inside",  # Position labels inside the slices
+        )
+
+        # Update layout
+        lp_animated.update_layout(
+            template="plotly_white",
+            showlegend=True,
+        )
+
+        st.plotly_chart(lp_animated, use_container_width=True, key='late_products_animated')
+        st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
