@@ -230,7 +230,8 @@ def visualisation_tab():
                 x_end="End Time",
                 y="Product Name",
                 color="legend",  # Use Components for color differentiation
-                labels={"Components": "Component", "Machine Number": "Machine"}
+                labels={"Components": "Component", "Machine Number": "Machine"},
+                hover_data=["Machine Number"]
             )
             fig_animated.update_yaxes(categoryorder="total ascending")  # Sort tasks
             fig_animated.update_layout(
